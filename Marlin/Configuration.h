@@ -8,9 +8,9 @@
 //===========================================================================
 //============================= DELTA Printer ===============================
 //===========================================================================
-// For a Delta printer rplace the configuration files wilth the files in the 
+// For a Delta printer rplace the configuration files wilth the files in the
 // example_configurations/delta directory.
-// 
+//
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
@@ -25,7 +25,7 @@
 
 // This determines the communication speed of the printer
 // This determines the communication speed of the printer
-#define BAUDRATE 250000
+#define BAUDRATE 115200
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices
@@ -37,7 +37,7 @@
 // 12 = Gen7 v1.3
 // 13 = Gen7 v1.4
 // 2  = Cheaptronic v1.0
-// 20 = Sethi 3D_1 
+// 20 = Sethi 3D_1
 // 3  = MEGA/RAMPS up to 1.2 = 3
 // 33 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
 // 34 = RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
@@ -52,6 +52,7 @@
 // 65 = Azteeg X1
 // 66 = Melzi with ATmega1284 (MaKr3d version)
 // 67 = Azteeg X3
+// 68 = BeeDee 0.1 / 0.2
 // 7  = Ultimaker
 // 71 = Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 // 77 = 3Drag Controller
@@ -69,9 +70,15 @@
 // 301 = Rambo
 // 21 = Elefu Ra Board (v3)
 
-#ifndef MOTHERBOARD
-#define MOTHERBOARD 7
+#ifndef MOTHERBOARD 
+#define MOTHERBOARD 68
 #endif
+
+
+#define BUCC_JAN 1401     //Jan'2014 No heatbed, No autoleveling
+#define BUCC_APR 1404     //Aprial Verion, Heated bed, and auto leveling
+
+#define BUCC_VERSION  BUCC_JAN
 
 // Define this to set a custom name for your generic Mendel,
 // #define CUSTOM_MENDEL_NAME "This Mendel"
@@ -121,18 +128,23 @@
 // 52 is 200k thermistor - ATC Semitec 204GT-2 (1k pullup)
 // 55 is 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (1k pullup)
 
-#define TEMP_SENSOR_0 -1
-#define TEMP_SENSOR_1 -1
+#define TEMP_SENSOR_0 6
+#define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
-#define TEMP_SENSOR_BED 0
-
+#if BUCC_VERSION == BUCC_JAN
+  #define TEMP_SENSOR_BED 6
+#endif
+#if BUCC_VERSION == BUCC_JAN
+  #define TEMP_SENSOR_BED 6
+#endif
 // This makes temp sensor 1 a redundant sensor for sensor 0. If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
-#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+//#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_HYSTERESIS 1       // (degC) range of +/- temperatures considered "close" to the target one
 #define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
@@ -164,17 +176,40 @@
 #ifdef PIDTEMP
   //#define PID_DEBUG // Sends debug data to the serial port.
   //#define PID_OPENLOOP 1 // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-  #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
-                                  // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+  //#define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
+                                  // is more than PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+#if BUCC_VERSION == BUCC_JAN                                  
+  #define PID_FUNCTIONAL_RANGE 20
   #define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
   #define K1 0.95 //smoothing factor within the PID
   #define PID_dT ((16.0 * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
+#endif
+
+#if BUCC_VERSION == BUCC_APR                                  
+  #define PID_FUNCTIONAL_RANGE 20
+  #define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
+  #define K1 0.95 //smoothing factor within the PID
+  #define PID_dT ((16.0 * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
+#endif
+
+#if BUCC_VERSION == BUCC_APR
+    #define  DEFAULT_Kp 9.4
+    #define  DEFAULT_Ki 0.4
+    #define  DEFAULT_Kd 55.66
+#endif
+
+
+#if BUCC_VERSION == BUCC_JAN
+    #define  DEFAULT_Kp 13.77
+    #define  DEFAULT_Ki 0.77
+    #define  DEFAULT_Kd 61.84
+#endif
 
 // If you are using a preconfigured hotend then you can use one of the value sets by uncommenting it
 // Ultimaker
-    #define  DEFAULT_Kp 22.2
-    #define  DEFAULT_Ki 1.08
-    #define  DEFAULT_Kd 114
+//    #define  DEFAULT_Kp 9.4
+ //   #define  DEFAULT_Ki 0.4
+ //   #define  DEFAULT_Kd 55.66
 
 // Makergear
 //    #define  DEFAULT_Kp 7.0
@@ -239,7 +274,7 @@
 //===========================================================================
 
 // Uncomment the following line to enable CoreXY kinematics
-// #define COREXY
+#define COREXY
 
 // coarse Endstop Settings
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
@@ -264,18 +299,23 @@
 #endif
 
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
-const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool X_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Y_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+const bool X_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool Y_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#if BUCC_VERSION == BUCC_JAN
+  const bool Z_MIN_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+#endif
+#if BUCC_VERSION == BUCC_APR
+  const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
+#endif
+const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
+const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 //#define DISABLE_MAX_ENDSTOPS
 //#define DISABLE_MIN_ENDSTOPS
 
 // Disable max endstops for compatibility with endstop checking routine
 #if defined(COREXY) && !defined(DISABLE_MAX_ENDSTOPS)
-  #define DISABLE_MAX_ENDSTOPS
+ // #define DISABLE_MAX_ENDSTOPS
 #endif
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
@@ -291,8 +331,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DISABLE_E false // For all extruders
 
 #define INVERT_X_DIR true    // for Mendel set to false, for Orca set to true
-#define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
-#define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
+#define INVERT_Y_DIR true    // for Mendel set to true, for Orca set to false
+#if BUCC_VERSION == BUCC_JAN
+  #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
+#endif
+#if BUCC_VERSION == BUCC_APR
+  #define INVERT_Z_DIR false     // for Mendel set to false, for Orca set to true
+#endif
 #define INVERT_E0_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
@@ -300,73 +345,87 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // ENDSTOP SETTINGS:
 // Sets direction of endstops when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
+#define Y_HOME_DIR 1
+#if BUCC_VERSION == BUCC_JAN
+  #define Z_HOME_DIR 1
+#endif
+#if BUCC_VERSION == BUCC_APR
+  #define Z_HOME_DIR  -1
+#endif
+
 
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // Travel limits after homing
-#define X_MAX_POS 205
+#define X_MAX_POS 131
 #define X_MIN_POS 0
-#define Y_MAX_POS 205
+#define Y_MAX_POS 112
 #define Y_MIN_POS 0
-#define Z_MAX_POS 200
+#define Z_MAX_POS 145
 #define Z_MIN_POS 0
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 //============================= Bed Auto Leveling ===========================
-
-//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
+#if BUCC_VERSION == BUCC_APR
+  #define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
+#endif
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 
   // these are the positions on the bed to do the probing
-  #define LEFT_PROBE_BED_POSITION 15
-  #define RIGHT_PROBE_BED_POSITION 170
-  #define BACK_PROBE_BED_POSITION 180
-  #define FRONT_PROBE_BED_POSITION 20
+  #define LEFT_PROBE_BED_POSITION 10     
+  #define RIGHT_PROBE_BED_POSITION 130
+  #define BACK_PROBE_BED_POSITION 80
+  #define FRONT_PROBE_BED_POSITION 10
+  
+  //#define LEFT_PROBE_BED_POSITION 10
+  //#define RIGHT_PROBE_BED_POSITION 95
+  //#define BACK_PROBE_BED_POSITION 110
+  //#define FRONT_PROBE_BED_POSITION 45
 
   // these are the offsets to the prob relative to the extruder tip (Hotend - Probe)
-  #define X_PROBE_OFFSET_FROM_EXTRUDER -25
-  #define Y_PROBE_OFFSET_FROM_EXTRUDER -29
-  #define Z_PROBE_OFFSET_FROM_EXTRUDER -12.35
-
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 32.8
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 6
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1.5
   #define Z_RAISE_BEFORE_HOMING 4       // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                         // Be sure you have this distance over your Z_MAX_POS in case
-    
+
   #define XY_TRAVEL_SPEED 8000         // X and Y axis travel speed between probes, in mm/min
-  
+
   #define Z_RAISE_BEFORE_PROBING 15    //How much the extruder will be raised before traveling to the first probing point.
   #define Z_RAISE_BETWEEN_PROBINGS 5  //How much the extruder will be raised when traveling from between next probing points
 
+  #define PROBE_1_OFFSET 0
+  #define PROBE_2_OFFSET 0    // + means nozzle going up.
+  #define PROBE_3_OFFSET 0
 
   //If defined, the Probe servo will be turned on only during movement and then turned off to avoid jerk
   //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
   // You MUST HAVE the SERVO_ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
-//  #define PROBE_SERVO_DEACTIVATION_DELAY 300  
+//  #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
 
-//If you have enabled the Bed Auto Levelling and are using the same Z Probe for Z Homing, 
+//If you have enabled the Bed Auto Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 
-  #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area. 
+  #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
                           // When defined, it will:
                           // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
                           // - If stepper drivers timeout, it will need X and Y homing again before Z homing
                           // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
                           // - Block Z homing only when the probe is outside bed area.
-  
+
   #ifdef Z_SAFE_HOMING
-    
+
     #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28)
     #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28)
-    
+
   #endif
-  
+
 #endif
 
 
@@ -383,15 +442,25 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {50*60, 50*60, 4*60, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {50*60, 50*60, 2*60, 0}  // set the homing speeds (mm/min)
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7402,78.7402,200.0*8/3,760*1.1}  // default steps per unit for Ultimaker
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 5, 25}    // (mm/sec)
-#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,10000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   {88.8889,88.8889,94.1176,115}  // default steps per unit for Ultimaker
+#if BUCC_VERSION == BUCC_JAN
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,80,115}  // default steps per unit for Ultimaker
+  #define DEFAULT_MAX_FEEDRATE          {500, 500, 25, 25}    // (mm/sec)
+#endif
 
-#define DEFAULT_ACCELERATION          3000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#if BUCC_VERSION == BUCC_APR
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,80,115}  // default steps per unit for Ultimaker
+  #define DEFAULT_MAX_FEEDRATE          {500, 500, 3, 25}    // (mm/sec)
+#endif
+
+
+#define DEFAULT_MAX_ACCELERATION      {9000,9000,100,1000}    // X, Y, Z, E maximum start speed for accelerated moves. E default values are good for skeinforge 40+, for older versions raise them a lot.
+
+#define DEFAULT_ACCELERATION          1000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  3000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
@@ -415,10 +484,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable eeprom support
-//#define EEPROM_SETTINGS
+#define EEPROM_SETTINGS
 //to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 
 // Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 180
@@ -435,6 +504,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //#define SDSUPPORT // Enable SD Card Support in Hardware Console
 //#define SDSLOW // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define ENCODER_PULSES_PER_STEP 1 // Increase if you have a high resolution encoder
+//#define ENCODER_STEPS_PER_MENU_ITEM 5 // Set according to ENCODER_PULSES_PER_STEP or your liking
 //#define ULTIMAKERCONTROLLER //as available from the ultimaker online store.
 //#define ULTIPANEL  //the ultipanel as on thingiverse
 
@@ -541,7 +611,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 // Shift register panels
 // ---------------------
 // 2 wire Non-latching LCD SR from:
-// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection 
+// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
 //#define SR_LCD
 #ifdef SR_LCD
    #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
@@ -633,7 +703,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //#define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
 //#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 70,0} // X,Y,Z Axis Extend and Retract angles
 
+
+#define BED_BAD_AD_CONVERTOR
 #include "Configuration_adv.h"
 #include "thermistortables.h"
+
 
 #endif //__CONFIGURATION_H

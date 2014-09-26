@@ -4,6 +4,12 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
+#ifdef BEEDEE
+    long unsigned int Machine_Id;
+    //float Z_Length_100;  //100 times to real value.
+#endif
+
+
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 {
     do
@@ -14,6 +20,8 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
     }while(--size);
 }
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
+
+
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 {
     do
@@ -57,6 +65,11 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,max_z_jerk);
   EEPROM_WRITE_VAR(i,max_e_jerk);
   EEPROM_WRITE_VAR(i,add_homeing);
+  #//////////////////////////////////////////////////////////////////////////////////////////////////////////
+  #ifdef BEEDEE
+  EEPROM_WRITE_VAR(i,Machine_Id);
+  EEPROM_WRITE_VAR(i,max_pos[Z_AXIS]);
+  #endif
   #ifdef DELTA
   EEPROM_WRITE_VAR(i,endstop_adj);
   #endif
@@ -148,6 +161,13 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR(" Y" ,add_homeing[1] );
     SERIAL_ECHOPAIR(" Z" ,add_homeing[2] );
     SERIAL_ECHOLN("");
+    
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Machine Id");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M520  ",Machine_Id );
+    SERIAL_ECHOLN("");    
+    SERIAL_ECHOLN(""); 
 #ifdef DELTA
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Endstop adjustement (mm):");
@@ -197,6 +217,11 @@ void Config_RetrieveSettings()
         EEPROM_READ_VAR(i,max_z_jerk);
         EEPROM_READ_VAR(i,max_e_jerk);
         EEPROM_READ_VAR(i,add_homeing);
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        #ifdef BEEDEE
+        EEPROM_READ_VAR(i,Machine_Id);
+        EEPROM_READ_VAR(i,max_pos[Z_AXIS]);
+        #endif   
         #ifdef DELTA
         EEPROM_READ_VAR(i,endstop_adj);
         #endif
@@ -261,6 +286,8 @@ void Config_ResetDefault()
     max_z_jerk=DEFAULT_ZJERK;
     max_e_jerk=DEFAULT_EJERK;
     add_homeing[0] = add_homeing[1] = add_homeing[2] = 0;
+    //  Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
+    max_pos[2] =  Z_MAX_POS;
 #ifdef DELTA
     endstop_adj[0] = endstop_adj[1] = endstop_adj[2] = 0;
 #endif

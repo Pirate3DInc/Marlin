@@ -403,10 +403,15 @@ void checkExtruderAutoFans()
 
 #endif // any extruder auto fan pins set
 
+//**************************************************************************************************************************
 void manage_heater()
 {
   float pid_input;
   float pid_output;
+  
+  //////////////////////////////////////////////////////////////////////////////////////
+  WRITE(HEATER_BED_PIN,HIGH);     //Temp use only, Xuming  Jan 21th 2014
+  /////////////////////////////////////////////////////////////////////////////////////
 
   if(temp_meas_ready != true)   //better readability
     return; 
@@ -642,6 +647,7 @@ static float analog2temp(int raw, uint8_t e) {
   return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
 }
 
+//***********************************************************************************************************************************
 // Derived from RepRap FiveD extruder::getTemperature()
 // For bed temperature measurement.
 static float analog2tempBed(int raw) {
@@ -663,7 +669,10 @@ static float analog2tempBed(int raw) {
 
     // Overflow: Set to last value in the table
     if (i == BEDTEMPTABLE_LEN) celsius = PGM_RD_W(BEDTEMPTABLE[i-1][1]);
-
+    
+   #if BUCC_VERSION == BUCC_JAN
+     return 40.0;
+   #endif
     return celsius;
   #elif defined BED_USES_AD595
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
@@ -672,6 +681,7 @@ static float analog2tempBed(int raw) {
   #endif
 }
 
+//*******************************************************************************************************************************
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues()
@@ -692,6 +702,7 @@ static void updateTemperaturesFromRawValues()
     CRITICAL_SECTION_END;
 }
 
+//***********************************************************************************************************************************
 void tp_init()
 {
 #if (MOTHERBOARD == 80) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1))
@@ -894,7 +905,7 @@ void setWatch()
 #endif 
 }
 
-
+//*******************************************************************************************************
 void disable_heater()
 {
   for(int i=0;i<EXTRUDERS;i++)
@@ -966,6 +977,7 @@ void bed_max_temp_error(void) {
   if(IsStopped() == false) {
     SERIAL_ERROR_START;
     SERIAL_ERRORLNPGM("Temperature heated bed switched off. MAXTEMP triggered !!");
+    SERIAL_ERRORLN((int)current_temperature_bed_raw);
     LCD_ALERTMESSAGEPGM("Err: MAXTEMP BED");
   }
   #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
@@ -1260,14 +1272,16 @@ ISR(TIMER0_COMPB_vect)
   
   /* No bed MINTEMP error? */
 #if defined(BED_MAXTEMP) && (TEMP_SENSOR_BED != 0)
-# if HEATER_BED_RAW_LO_TEMP > HEATER_BED_RAW_HI_TEMP
+#if HEATER_BED_RAW_LO_TEMP > HEATER_BED_RAW_HI_TEMP
     if(current_temperature_bed_raw <= bed_maxttemp_raw) {
 #else
     if(current_temperature_bed_raw >= bed_maxttemp_raw) {
 #endif
+      #ifndef BED_BAD_AD_CONVERTOR
        target_temperature_bed = 0;
        bed_max_temp_error();
-    }
+      #endif
+}
 #endif
   }
   

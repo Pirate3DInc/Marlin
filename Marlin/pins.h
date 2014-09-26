@@ -235,7 +235,7 @@
 #ifndef GEN7_VERSION
 #define GEN7_VERSION 14 // v1.x
 #endif
-
+d
 //x axis pins
 #define X_STEP_PIN 29
 #define X_DIR_PIN 28
@@ -958,6 +958,9 @@
 * Sanguinololu pin assignment
 *
 ****************************************************************************************/
+#if MOTHERBOARD == 68
+#define BEEDEE
+#endif
 #if MOTHERBOARD == 64
 #define STB
 #endif
@@ -967,7 +970,7 @@
 #if MOTHERBOARD == 65
 #define AZTEEG_X1
 #endif
-#if MOTHERBOARD == 62 || MOTHERBOARD == 63 || MOTHERBOARD == 64 || MOTHERBOARD == 65 || MOTHERBOARD == 66
+#if MOTHERBOARD == 62 || MOTHERBOARD == 63 || MOTHERBOARD == 64 || MOTHERBOARD == 65 || MOTHERBOARD == 66 || MOTHERBOARD == 68
 #undef MOTHERBOARD
 #define MOTHERBOARD 6
 #define SANGUINOLOLU_V_1_2
@@ -988,9 +991,16 @@
 #define Y_DIR_PIN          23
 #define Y_STOP_PIN         19
 
+//#define Y_MAX_PIN          19
+
 #define Z_STEP_PIN         3
 #define Z_DIR_PIN          2
-#define Z_STOP_PIN         20
+#if BUCC_VERSION == BUCC_JAN
+  #define Z_STOP_PIN         20
+#endif
+#if BUCC_VERSION == BUCC_APR
+  #define Z_STOP_PIN         10
+#endif
 
 #define E0_STEP_PIN         1
 #define E0_DIR_PIN          0
@@ -1002,6 +1012,11 @@
   #define FAN_SOFT_PWM
 #endif
 
+#ifdef BEEDEE
+  #define FAN_PIN          4
+  #define REAR_FAN_PIN     29  // Pin29   is  PA2
+  //#define REAR_FAN_PIN     30  // Pin30   is  PA1
+#endif
 #ifdef MELZI
  #define LED_PIN            27 /* On some broken versions of the Sanguino libraries the pin definitions are wrong, which then needs LED_PIN as pin 28. But you better upgrade your Sanguino libraries! See #368. */
  #define FAN_PIN            4 // Works for Panelolu2 too
@@ -2427,6 +2442,7 @@
     #define Y_MAX_PIN Y_STOP_PIN
   #endif
 #endif
+
 
 #ifdef Z_STOP_PIN
   #if Z_HOME_DIR < 0

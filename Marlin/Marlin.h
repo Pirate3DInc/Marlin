@@ -233,4 +233,11 @@ extern unsigned long stoptime;
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
 
+
+
+#ifdef BEEDEE
+    extern long unsigned int Machine_Id;
+    //extern float Z_Length_100;  //100 times to real value.
+#endif
+
 #endif

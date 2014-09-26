@@ -123,6 +123,7 @@
       #define Y_HOME_POS Y_MAX_LENGTH * 0.5
     #else
       #define Y_HOME_POS Y_MAX_POS
+      //#error "Y_HOME_POS"
     #endif //BED_CENTER_AT_0_0
   #endif //Y_HOME_DIR == -1
   
@@ -229,7 +230,7 @@
 #define INVERT_E_STEP_PIN false
 
 //default stepper release if idle
-#define DEFAULT_STEPPER_DEACTIVE_TIME 60
+#define DEFAULT_STEPPER_DEACTIVE_TIME 180
 
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
